@@ -1,9 +1,8 @@
 import User from "../models/user";
-import { hashPassword, comparePassword } from "../utis/auth";
+import { hashPassword, comparePassword } from "../utils/auth";
 
 export const register = async (req, res) => {
     console.log(req.body);
-    res.send("register user");
     
     try {
         const { name, email, password } = req.body;
@@ -14,7 +13,7 @@ export const register = async (req, res) => {
             return res.status(400).send("Password is required and should be min 6 characyers long");
         }
         let userExist = await User.findOne({email}).exec();
-        if (userExist) res.status(400).send("Email is taken");
+        if (userExist) return res.status(400).send("Email is taken");
 
         // has password
         const hashedPassword = await hashPassword(password);
@@ -24,7 +23,9 @@ export const register = async (req, res) => {
             name,
             email,
             password: hashedPassword
-        }).save();
+        });
+
+        await user.save();
 
         console.log("saved user", user);
         return res.json({ ok: true });
